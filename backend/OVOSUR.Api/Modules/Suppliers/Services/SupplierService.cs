@@ -21,9 +21,9 @@ public sealed class SupplierService(OvosurDbContext dbContext)
 
         query = normalizedStatus switch
         {
-            "PENDIENTE" => query.Where(x => x.Usuario.EstadoAprobacion == ApprovalStates.Pendiente),
-            "APROBADO" => query.Where(x => x.Usuario.EstadoAprobacion == ApprovalStates.Aprobado),
-            "RECHAZADO" => query.Where(x => x.Usuario.EstadoAprobacion == ApprovalStates.Rechazado),
+            "PENDIENTE" => query.Where(x => x.EstadoHomologacion == SupplierStates.EnRevision),
+            "APROBADO" => query.Where(x => x.EstadoHomologacion == SupplierStates.Aprobado),
+            "RECHAZADO" => query.Where(x => x.EstadoHomologacion == SupplierStates.Rechazado),
             "OBSERVADO" => query.Where(x => x.EstadoHomologacion == SupplierStates.Observado),
             _ => query
         };

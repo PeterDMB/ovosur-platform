@@ -30,6 +30,16 @@ export type LoginRequest = {
   password: string
 }
 
+export type RegisterProviderRequest = {
+  ruc: string
+  razonSocial: string
+  email: string
+  password: string
+  nombreComercial?: string
+  direccionFiscal?: string
+  telefono?: string
+}
+
 export type SupplierApproval = {
   proveedorId: number
   usuarioId: string
@@ -43,6 +53,11 @@ export type SupplierApproval = {
 
 export async function login(request: LoginRequest) {
   const response = await api.post<AuthSession>('/api/auth/login', request)
+  return response.data
+}
+
+export async function registerProvider(request: RegisterProviderRequest) {
+  const response = await api.post('/api/auth/register-provider', request)
   return response.data
 }
 
