@@ -1,0 +1,6 @@
+@OVOSUR.Api_HostAddress = http://localhost:5274
+
+GET {{OVOSUR.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
