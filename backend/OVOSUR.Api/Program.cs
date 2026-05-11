@@ -1,9 +1,12 @@
+using Microsoft.AspNetCore.Identity;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using OVOSUR.Api.Infrastructure.Persistence;
 using OVOSUR.Api.Modules.Security;
+using OVOSUR.Api.Modules.Security.Entities;
+using OVOSUR.Api.Modules.Security.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
@@ -11,6 +14,9 @@ builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, relo
 builder.Services.AddOpenApi();
 builder.Services.AddDbContext<OvosurDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("OvosurIntranet")));
+builder.Services.AddScoped<PasswordHasher<Usuario>>();
+builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<AuthService>();
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
@@ -71,5 +77,6 @@ app.MapGet("/api/platform/modules", () => Results.Ok(new[]
     new { code = "TESORERIA", name = "Tesoreria", status = "planned" },
     new { code = "DISTRIBUCION", name = "Distribucion", status = "planned" }
 }));
+app.MapAuthEndpoints();
 
 app.Run();

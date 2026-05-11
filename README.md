@@ -39,6 +39,30 @@ cd frontend\ovosur-web
 npm run dev
 ```
 
+## Autenticacion local
+
+La API lee credenciales locales desde `backend/OVOSUR.Api/appsettings.Local.json`. Ese archivo no se sube a GitHub.
+
+Para configurar o cambiar el Super Admin en desarrollo:
+
+```powershell
+Invoke-RestMethod `
+  -Uri "http://localhost:5274/api/auth/dev/bootstrap-super-admin" `
+  -Method Post `
+  -ContentType "application/json" `
+  -Body '{"email":"admin@ovosur.local","password":"TU_PASSWORD_ADMIN"}'
+```
+
+Endpoints iniciales:
+
+```txt
+POST /api/auth/login
+POST /api/auth/refresh
+POST /api/auth/register-provider
+GET  /api/auth/me
+POST /api/auth/dev/bootstrap-super-admin
+```
+
 ## Flujo Git recomendado
 
 ```powershell

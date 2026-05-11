@@ -14,6 +14,8 @@
 - Usuarios, roles, permisos, modulos y submodulos.
 - Proveedores, contactos y documentos.
 - Auditoria.
+- Login JWT y refresh tokens.
+- Bloqueo por intentos fallidos.
 
 ## Fase 2 - Autenticacion
 
