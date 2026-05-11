@@ -61,6 +61,8 @@ POST /api/auth/refresh
 POST /api/auth/register-provider
 GET  /api/auth/me
 POST /api/auth/dev/bootstrap-super-admin
+GET  /api/suppliers?status=PENDIENTE
+PATCH /api/suppliers/{proveedorId}/approval
 ```
 
 ## Flujo Git recomendado

@@ -7,6 +7,8 @@ using OVOSUR.Api.Infrastructure.Persistence;
 using OVOSUR.Api.Modules.Security;
 using OVOSUR.Api.Modules.Security.Entities;
 using OVOSUR.Api.Modules.Security.Services;
+using OVOSUR.Api.Modules.Suppliers;
+using OVOSUR.Api.Modules.Suppliers.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
@@ -17,6 +19,7 @@ builder.Services.AddDbContext<OvosurDbContext>(options =>
 builder.Services.AddScoped<PasswordHasher<Usuario>>();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<SupplierService>();
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
@@ -78,5 +81,6 @@ app.MapGet("/api/platform/modules", () => Results.Ok(new[]
     new { code = "DISTRIBUCION", name = "Distribucion", status = "planned" }
 }));
 app.MapAuthEndpoints();
+app.MapSupplierEndpoints();
 
 app.Run();

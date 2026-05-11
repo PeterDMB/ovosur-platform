@@ -11,6 +11,8 @@
 - Registro de proveedor con estado `PENDIENTE` y homologacion `EN_REVISION`.
 - Endpoint `/api/auth/me` protegido por JWT.
 - Endpoint de desarrollo para inicializar el Super Admin.
+- Endpoints administrativos para listar y aprobar proveedores.
+- Dashboard React segun tipo de sesion.
 
 ## Endpoints
 
@@ -20,7 +22,21 @@ POST /api/auth/refresh
 POST /api/auth/register-provider
 GET  /api/auth/me
 POST /api/auth/dev/bootstrap-super-admin
+GET  /api/suppliers?status=PENDIENTE
+PATCH /api/suppliers/{proveedorId}/approval
 ```
+
+## Decisiones de aprobacion
+
+El endpoint `PATCH /api/suppliers/{proveedorId}/approval` acepta:
+
+```txt
+APROBAR
+OBSERVAR
+RECHAZAR
+```
+
+Solo usuarios con rol `SUPER_ADMIN` pueden usar estos endpoints.
 
 ## Notas de seguridad
 

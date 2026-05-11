@@ -30,8 +30,40 @@ export type LoginRequest = {
   password: string
 }
 
+export type SupplierApproval = {
+  proveedorId: number
+  usuarioId: string
+  ruc: string
+  razonSocial: string
+  email: string
+  estadoAprobacion: string
+  estadoHomologacion: string
+  fechaRegistro: string
+}
+
 export async function login(request: LoginRequest) {
   const response = await api.post<AuthSession>('/api/auth/login', request)
+  return response.data
+}
+
+export async function listSuppliers(session: AuthSession, status = 'PENDIENTE') {
+  const response = await api.get<SupplierApproval[]>('/api/suppliers', {
+    params: { status },
+    headers: { Authorization: `Bearer ${session.accessToken}` },
+  })
+  return response.data
+}
+
+export async function updateSupplierApproval(
+  session: AuthSession,
+  proveedorId: number,
+  decision: 'APROBAR' | 'OBSERVAR' | 'RECHAZAR',
+) {
+  const response = await api.patch(
+    `/api/suppliers/${proveedorId}/approval`,
+    { decision },
+    { headers: { Authorization: `Bearer ${session.accessToken}` } },
+  )
   return response.data
 }
 

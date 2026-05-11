@@ -16,6 +16,8 @@
 - Auditoria.
 - Login JWT y refresh tokens.
 - Bloqueo por intentos fallidos.
+- Aprobacion inicial de proveedores.
+- Dashboard inicial por tipo de usuario.
 
 ## Fase 2 - Autenticacion
 
