@@ -6,6 +6,7 @@ using OVOSUR.Api.Infrastructure.Persistence;
 using OVOSUR.Api.Modules.Security;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
 
 builder.Services.AddOpenApi();
 builder.Services.AddDbContext<OvosurDbContext>(options =>
