@@ -1,7 +1,6 @@
 import { type FormEvent, useEffect, useMemo, useState } from 'react'
 import {
   AlertTriangle,
-  BadgeCheck,
   Building2,
   CheckCircle2,
   ClipboardList,
@@ -9,7 +8,6 @@ import {
   FileText,
   KeyRound,
   LayoutDashboard,
-  LockKeyhole,
   PackageCheck,
   RefreshCw,
   ShieldCheck,
@@ -30,7 +28,7 @@ import {
 import './App.css'
 
 type ActiveView = 'dashboard' | 'proveedores' | 'ventas' | 'tesoreria' | 'distribucion' | 'seguridad'
-type PublicView = 'login' | 'registro-proveedor'
+type PublicView = 'proveedor-login' | 'colaborador-login' | 'registro-proveedor'
 
 const modules = [
   { code: 'proveedores', name: 'Proveedores', status: 'Activo', icon: Building2 },
@@ -43,9 +41,9 @@ const modules = [
 const supplierStatuses = ['PENDIENTE', 'OBSERVADO', 'APROBADO', 'RECHAZADO']
 
 function App() {
-  const [email, setEmail] = useState('admin@ovosur.local')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [publicView, setPublicView] = useState<PublicView>('login')
+  const [publicView, setPublicView] = useState<PublicView>('proveedor-login')
   const [activeView, setActiveView] = useState<ActiveView>('dashboard')
   const [session, setSession] = useState<AuthSession | null>(() => {
     const raw = window.localStorage.getItem('ovosur.session')
@@ -71,11 +69,10 @@ function App() {
 
   const isAdmin = session?.user.roles.includes('SUPER_ADMIN') ?? false
   const pageTitle = useMemo(() => {
-    if (!session) return 'Consola corporativa OVOSUR'
     if (activeView === 'dashboard') return 'Panel principal'
     const module = modules.find((item) => item.code === activeView)
     return module ? module.name : 'Panel principal'
-  }, [activeView, session])
+  }, [activeView])
 
   useEffect(() => {
     if (session && isAdmin && activeView === 'proveedores') {
@@ -111,6 +108,7 @@ function App() {
     try {
       await registerProvider(providerForm)
       setSuccessMessage('Proveedor registrado. Queda pendiente de aprobacion por Compras.')
+      setPublicView('proveedor-login')
       setProviderForm({
         ruc: '',
         razonSocial: '',
@@ -132,7 +130,7 @@ function App() {
     setSession(null)
     setSuppliers([])
     setActiveView('dashboard')
-    setPublicView('login')
+    setPublicView('proveedor-login')
   }
 
   async function handleLoadSuppliers() {
@@ -169,6 +167,153 @@ function App() {
     setProviderForm((current) => ({ ...current, [field]: value }))
   }
 
+  if (!session) {
+    return (
+      <main className="public-shell">
+        <section className={`auth-card ${publicView === 'registro-proveedor' ? 'wide' : ''}`}>
+          <div className="auth-brand">
+            <div className="brand-mark">OV</div>
+            <div>
+              <strong>OVOSUR</strong>
+              <span>Intranet / Extranet</span>
+            </div>
+          </div>
+
+          {publicView === 'registro-proveedor' ? (
+            <form onSubmit={handleProviderRegister}>
+              <div className="auth-heading">
+                <h1>Registro de proveedor</h1>
+                <p>Completa la solicitud para evaluacion interna.</p>
+              </div>
+
+              <div className="form-grid">
+                <label>
+                  RUC
+                  <input
+                    maxLength={11}
+                    value={providerForm.ruc}
+                    onChange={(event) => updateProviderField('ruc', event.target.value)}
+                  />
+                </label>
+                <label>
+                  Razon social
+                  <input
+                    value={providerForm.razonSocial}
+                    onChange={(event) => updateProviderField('razonSocial', event.target.value)}
+                  />
+                </label>
+                <label>
+                  Nombre comercial
+                  <input
+                    value={providerForm.nombreComercial}
+                    onChange={(event) => updateProviderField('nombreComercial', event.target.value)}
+                  />
+                </label>
+                <label>
+                  Correo
+                  <input
+                    type="email"
+                    value={providerForm.email}
+                    onChange={(event) => updateProviderField('email', event.target.value)}
+                  />
+                </label>
+                <label>
+                  Contrasena
+                  <input
+                    type="password"
+                    value={providerForm.password}
+                    onChange={(event) => updateProviderField('password', event.target.value)}
+                  />
+                </label>
+                <label>
+                  Telefono
+                  <input
+                    value={providerForm.telefono}
+                    onChange={(event) => updateProviderField('telefono', event.target.value)}
+                  />
+                </label>
+              </div>
+
+              <label>
+                Direccion fiscal
+                <input
+                  value={providerForm.direccionFiscal}
+                  onChange={(event) => updateProviderField('direccionFiscal', event.target.value)}
+                />
+              </label>
+
+              {message ? <p className="alert error">{message}</p> : null}
+              {successMessage ? <p className="alert success">{successMessage}</p> : null}
+
+              <button className="primary-action" type="submit" disabled={isLoading}>
+                <UserPlus size={18} />
+                {isLoading ? 'Registrando...' : 'Enviar solicitud'}
+              </button>
+
+              <button className="text-action" type="button" onClick={() => setPublicView('proveedor-login')}>
+                Volver al ingreso de proveedores
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleLogin}>
+              <div className="auth-heading">
+                <h1>{publicView === 'colaborador-login' ? 'Colaboradores OVOSUR' : 'Portal de proveedores'}</h1>
+                <p>
+                  {publicView === 'colaborador-login'
+                    ? 'Acceso exclusivo para personal interno.'
+                    : 'Ingresa con tu cuenta aprobada.'}
+                </p>
+              </div>
+
+              <label>
+                Correo
+                <input
+                  type="email"
+                  placeholder={publicView === 'colaborador-login' ? 'usuario@ovosur.com' : 'proveedor@empresa.com'}
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                />
+              </label>
+
+              <label>
+                Contrasena
+                <input
+                  type="password"
+                  placeholder="Ingrese su contrasena"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                />
+              </label>
+
+              {message ? <p className="alert error">{message}</p> : null}
+              {successMessage ? <p className="alert success">{successMessage}</p> : null}
+
+              <button className="primary-action" type="submit" disabled={isLoading}>
+                <KeyRound size={18} />
+                {isLoading ? 'Validando...' : 'Ingresar'}
+              </button>
+
+              {publicView === 'proveedor-login' ? (
+                <>
+                  <button className="outline-action" type="button" onClick={() => setPublicView('registro-proveedor')}>
+                    Registro de proveedor
+                  </button>
+                  <button className="text-action" type="button" onClick={() => setPublicView('colaborador-login')}>
+                    Ingresar como colaborador OVOSUR
+                  </button>
+                </>
+              ) : (
+                <button className="text-action" type="button" onClick={() => setPublicView('proveedor-login')}>
+                  Volver al portal de proveedores
+                </button>
+              )}
+            </form>
+          )}
+        </section>
+      </main>
+    )
+  }
+
   return (
     <main className="app-shell">
       <aside className="sidebar" aria-label="Navegacion principal">
@@ -193,7 +338,7 @@ function App() {
             className={`nav-item ${activeView === 'proveedores' ? 'active' : ''}`}
             type="button"
             onClick={() => setActiveView('proveedores')}
-            disabled={!session || (!isAdmin && session.user.tipoUsuario !== 'PROVEEDOR')}
+            disabled={!isAdmin && session.user.tipoUsuario !== 'PROVEEDOR'}
           >
             <Building2 size={18} />
             Proveedores
@@ -202,7 +347,6 @@ function App() {
             className={`nav-item ${activeView === 'ventas' ? 'active' : ''}`}
             type="button"
             onClick={() => setActiveView('ventas')}
-            disabled={!session}
           >
             <PackageCheck size={18} />
             Ventas
@@ -211,7 +355,7 @@ function App() {
             className={`nav-item ${activeView === 'seguridad' ? 'active' : ''}`}
             type="button"
             onClick={() => setActiveView('seguridad')}
-            disabled={!session || !isAdmin}
+            disabled={!isAdmin}
           >
             <ShieldCheck size={18} />
             Seguridad
@@ -228,201 +372,31 @@ function App() {
           <span className="environment">Desarrollo local</span>
         </header>
 
-        {!session ? (
-          <section className="content-grid">
-            <section className="login-panel">
-              <div className="public-tabs" role="group" aria-label="Acceso publico">
-                <button
-                  type="button"
-                  className={publicView === 'login' ? 'selected' : ''}
-                  onClick={() => setPublicView('login')}
-                >
-                  Ingresar
-                </button>
-                <button
-                  type="button"
-                  className={publicView === 'registro-proveedor' ? 'selected' : ''}
-                  onClick={() => setPublicView('registro-proveedor')}
-                >
-                  Registro proveedor
-                </button>
-              </div>
+        {activeView === 'dashboard' ? (
+          <DashboardView session={session} isAdmin={isAdmin} onLogout={handleLogout} onOpenSuppliers={() => setActiveView('proveedores')} />
+        ) : null}
 
-              {publicView === 'login' ? (
-                <form onSubmit={handleLogin}>
-                  <div className="panel-title">
-                    <LockKeyhole size={22} />
-                    <div>
-                      <h2>Acceso seguro</h2>
-                      <p>Usuarios internos y proveedores aprobados</p>
-                    </div>
-                  </div>
+        {activeView === 'proveedores' ? (
+          isAdmin ? (
+            <AdminSuppliersView
+              suppliers={suppliers}
+              supplierStatus={supplierStatus}
+              supplierMessage={supplierMessage}
+              isLoadingSuppliers={isLoadingSuppliers}
+              onStatusChange={setSupplierStatus}
+              onLoadSuppliers={handleLoadSuppliers}
+              onDecision={handleSupplierDecision}
+            />
+          ) : (
+            <SupplierPortalView session={session} />
+          )
+        ) : null}
 
-                  <label>
-                    Correo
-                    <input
-                      type="email"
-                      placeholder="usuario@ovosur.com"
-                      value={email}
-                      onChange={(event) => setEmail(event.target.value)}
-                    />
-                  </label>
-
-                  <label>
-                    Contrasena
-                    <input
-                      type="password"
-                      placeholder="Ingrese su contrasena"
-                      value={password}
-                      onChange={(event) => setPassword(event.target.value)}
-                    />
-                  </label>
-
-                  {message ? <p className="alert error">{message}</p> : null}
-                  {successMessage ? <p className="alert success">{successMessage}</p> : null}
-
-                  <button className="primary-action" type="submit" disabled={isLoading}>
-                    <KeyRound size={18} />
-                    {isLoading ? 'Validando...' : 'Ingresar'}
-                  </button>
-                </form>
-              ) : (
-                <form onSubmit={handleProviderRegister}>
-                  <div className="panel-title">
-                    <UserPlus size={22} />
-                    <div>
-                      <h2>Registro de proveedor</h2>
-                      <p>Solicitud para evaluacion interna</p>
-                    </div>
-                  </div>
-
-                  <div className="form-grid">
-                    <label>
-                      RUC
-                      <input
-                        maxLength={11}
-                        value={providerForm.ruc}
-                        onChange={(event) => updateProviderField('ruc', event.target.value)}
-                      />
-                    </label>
-                    <label>
-                      Razon social
-                      <input
-                        value={providerForm.razonSocial}
-                        onChange={(event) => updateProviderField('razonSocial', event.target.value)}
-                      />
-                    </label>
-                    <label>
-                      Nombre comercial
-                      <input
-                        value={providerForm.nombreComercial}
-                        onChange={(event) => updateProviderField('nombreComercial', event.target.value)}
-                      />
-                    </label>
-                    <label>
-                      Correo
-                      <input
-                        type="email"
-                        value={providerForm.email}
-                        onChange={(event) => updateProviderField('email', event.target.value)}
-                      />
-                    </label>
-                    <label>
-                      Contrasena
-                      <input
-                        type="password"
-                        value={providerForm.password}
-                        onChange={(event) => updateProviderField('password', event.target.value)}
-                      />
-                    </label>
-                    <label>
-                      Telefono
-                      <input
-                        value={providerForm.telefono}
-                        onChange={(event) => updateProviderField('telefono', event.target.value)}
-                      />
-                    </label>
-                  </div>
-
-                  <label>
-                    Direccion fiscal
-                    <input
-                      value={providerForm.direccionFiscal}
-                      onChange={(event) => updateProviderField('direccionFiscal', event.target.value)}
-                    />
-                  </label>
-
-                  {message ? <p className="alert error">{message}</p> : null}
-                  {successMessage ? <p className="alert success">{successMessage}</p> : null}
-
-                  <button className="primary-action" type="submit" disabled={isLoading}>
-                    <UserPlus size={18} />
-                    {isLoading ? 'Registrando...' : 'Enviar solicitud'}
-                  </button>
-                </form>
-              )}
-            </section>
-
-            <ModuleOverview />
-          </section>
-        ) : (
-          <>
-            {activeView === 'dashboard' ? (
-              <DashboardView session={session} isAdmin={isAdmin} onLogout={handleLogout} onOpenSuppliers={() => setActiveView('proveedores')} />
-            ) : null}
-
-            {activeView === 'proveedores' ? (
-              isAdmin ? (
-                <AdminSuppliersView
-                  suppliers={suppliers}
-                  supplierStatus={supplierStatus}
-                  supplierMessage={supplierMessage}
-                  isLoadingSuppliers={isLoadingSuppliers}
-                  onStatusChange={setSupplierStatus}
-                  onLoadSuppliers={handleLoadSuppliers}
-                  onDecision={handleSupplierDecision}
-                />
-              ) : (
-                <SupplierPortalView session={session} />
-              )
-            ) : null}
-
-            {activeView !== 'dashboard' && activeView !== 'proveedores' ? (
-              <ModulePlaceholder activeView={activeView} />
-            ) : null}
-          </>
-        )}
+        {activeView !== 'dashboard' && activeView !== 'proveedores' ? (
+          <ModulePlaceholder activeView={activeView} />
+        ) : null}
       </section>
     </main>
-  )
-}
-
-function ModuleOverview() {
-  return (
-    <section className="module-panel" aria-label="Modulos iniciales">
-      <div className="panel-title">
-        <BadgeCheck size={22} />
-        <div>
-          <h2>Modulos base</h2>
-          <p>Arquitectura lista para crecer por areas</p>
-        </div>
-      </div>
-
-      <div className="module-list">
-        {modules.map((module) => {
-          const Icon = module.icon
-          return (
-            <article className="module-row" key={module.name}>
-              <Icon size={22} />
-              <div>
-                <strong>{module.name}</strong>
-                <span>{module.status}</span>
-              </div>
-            </article>
-          )
-        })}
-      </div>
-    </section>
   )
 }
 
